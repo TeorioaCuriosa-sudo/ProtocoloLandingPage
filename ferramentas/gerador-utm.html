@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gerador de links por empresa | Parceria Teoriacuriosa | Grupo CCR</title>
+  <style>
+    :root{--grafite:#2f2f32;--ouro:#cc8f1c;--ouro-escuro:#8a5f0a;--cinza:#5a5a5f;--linha:#e4e4e7;--erro:#8f1d1d}
+    *{box-sizing:border-box}
+    body{margin:0;background:#fff;color:var(--grafite);font-family:'Montserrat',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;line-height:1.6;font-size:15px}
+    .topo{border-bottom:4px solid var(--ouro);padding:18px 20px}
+    .topo div{max-width:1000px;margin:0 auto}
+    .topo strong{font-size:18px}
+    main{max-width:1000px;margin:0 auto;padding:28px 20px 64px}
+    h1{font-size:24px;line-height:1.25;margin:0 0 6px}
+    .sub{margin:0 0 28px;color:var(--cinza);max-width:70ch}
+    .grelha{display:grid;gap:20px;grid-template-columns:1fr 1fr}
+    @media (max-width:760px){.grelha{grid-template-columns:1fr}}
+    label,legend{display:block;font-weight:600;font-size:14px;margin-bottom:6px;padding:0}
+    .dica{display:block;font-weight:400;font-size:13px;color:var(--cinza);margin-top:4px}
+    input[type=text],textarea{width:100%;font:inherit;color:inherit;padding:10px 12px;border:2px solid var(--linha);border-radius:10px;background:#fff}
+    textarea{min-height:150px;resize:vertical}
+    input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid var(--grafite);outline-offset:2px}
+    fieldset{border:0;margin:0;padding:0;min-width:0}
+    .canais{display:flex;flex-wrap:wrap;gap:8px 18px}
+    .canais label{display:flex;align-items:center;gap:8px;margin:0;font-weight:500;cursor:pointer}
+    .canais input{width:18px;height:18px;accent-color:var(--grafite)}
+    .cheio{grid-column:1 / -1}
+    .acoes{display:flex;flex-wrap:wrap;gap:10px;margin:24px 0 8px}
+    button{font:inherit;font-weight:700;padding:11px 20px;border-radius:10px;border:2px solid var(--grafite);cursor:pointer;background:#fff;color:var(--grafite)}
+    button.principal{background:var(--grafite);color:#fff}
+    button:hover{opacity:.9}
+    button:disabled{opacity:.45;cursor:not-allowed}
+    .avisos{margin:12px 0 0;padding:0;list-style:none}
+    .avisos li{margin:0 0 6px;padding:8px 12px;border-radius:8px;background:#fbf4e6;border-left:4px solid var(--ouro);font-size:14px}
+    .avisos li.erro{background:#fdecec;border-left-color:var(--erro);color:var(--erro);font-weight:600}
+    table{width:100%;border-collapse:collapse;margin-top:20px;font-size:14px}
+    th,td{text-align:left;padding:10px 10px;border-bottom:1px solid var(--linha);vertical-align:middle}
+    th{font-size:13px;color:var(--cinza)}
+    th:nth-child(4){width:44%}
+    td.link input{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;padding:8px 10px}
+    code{font-family:ui-monospace,Consolas,monospace;background:#f4f4f5;padding:1px 6px;border-radius:5px}
+    .ajuda{margin-top:36px;padding-top:20px;border-top:1px solid var(--linha);color:var(--cinza);font-size:14px;max-width:80ch}
+    .ajuda h2{font-size:16px;color:var(--grafite);margin:0 0 8px}
+    .copiado{color:#065f46;font-weight:700;font-size:13px;margin-left:8px}
+  </style>
+</head>
+<body>
+  <div class="topo"><div><strong>Teoriacuriosa</strong> &nbsp;Ferramenta interna</div></div>
+  <main>
+    <h1>Gerador de links por empresa</h1>
+    <p class="sub">Gera um link da página para cada empresa do Grupo CCR (e para cada canal de envio). Quando alguém preenche o formulário por esse link, a coluna <strong>Origem (empresa)</strong> do Sheet mostra de que empresa veio.</p>
+
+    <div class="grelha">
+      <div class="cheio">
+        <label for="base">Endereço da página</label>
+        <input id="base" type="text" placeholder="https://protocolo.teoriacuriosa.pt/" autocomplete="off" spellcheck="false">
+        <span class="dica">O endereço final da landing page, depois de publicada.</span>
+      </div>
+
+      <div>
+        <label for="empresas">Empresas (uma por linha)</label>
+        <textarea id="empresas" placeholder="Empresa A&#10;Empresa B&#10;Empresa C" spellcheck="false"></textarea>
+        <span class="dica">Escreva o nome como o quer ver no Sheet. Acentos e espaços são tratados automaticamente.</span>
+      </div>
+
+      <div>
+        <fieldset>
+          <legend>Canais de envio</legend>
+          <div class="canais" id="canais">
+            <label><input type="checkbox" value="email" checked> Email</label>
+            <label><input type="checkbox" value="whatsapp"> WhatsApp</label>
+            <label><input type="checkbox" value="intranet"> Intranet</label>
+            <label><input type="checkbox" value="qr"> QR code</label>
+            <label><input type="checkbox" value="newsletter"> Newsletter</label>
+          </div>
+        </fieldset>
+        <div style="margin-top:16px">
+          <label for="campanha">Campanha</label>
+          <input id="campanha" type="text" value="protocolo-ccr" autocomplete="off" spellcheck="false">
+        </div>
+        <div style="margin-top:16px">
+          <label for="conteudo">Conteúdo (opcional)</label>
+          <input id="conteudo" type="text" placeholder="ex.: convite-1" autocomplete="off" spellcheck="false">
+          <span class="dica">Serve para distinguir envios diferentes à mesma empresa (ex.: primeiro e segundo convite).</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="acoes">
+      <button class="principal" id="gerar" type="button">Gerar links</button>
+      <button id="copiar-tudo" type="button" disabled>Copiar tudo (para Excel)</button>
+      <button id="csv" type="button" disabled>Descarregar CSV</button>
+      <span id="msg" class="copiado" role="status"></span>
+    </div>
+
+    <ul class="avisos" id="avisos"></ul>
+
+    <table id="tabela" hidden>
+      <thead><tr><th>Empresa</th><th>Canal</th><th>Origem no Sheet</th><th>Link</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="ajuda">
+      <h2>Como funciona</h2>
+      <p>Cada link leva <code>utm_source</code> (empresa), <code>utm_medium</code> (canal), <code>utm_campaign</code> e, se preencher, <code>utm_content</code>. A página lê estes valores e o servidor grava-os nas colunas <strong>Origem (empresa)</strong>, <strong>Meio</strong>, <strong>Campanha</strong> e <strong>Conteúdo</strong>. Quem abrir a página sem link de empresa fica com a origem <code>direto</code> (ou o site de onde veio).</p>
+      <p>Cada valor tem no máximo 30 caracteres, só letras minúsculas, números, ponto, hífen e sublinhado. Se um nome for mais comprido, é cortado, e a ferramenta avisa.</p>
+    </div>
+  </main>
+
+  <script>
+    // Mesma regra do script.js da página e do Code.gs (têm de ser iguais)
+    function limpar(v) {
+      return String(v || '')
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9._-]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    }
+
+    var $ = function (id) { return document.getElementById(id); };
+    var linhas = [];   // {empresa, slug, canal, url}
+
+    try { $('base').value = localStorage.getItem('ccr_utm_base') || ''; } catch (e) {}
+
+    function aviso(texto, erro) {
+      var li = document.createElement('li');
+      li.textContent = texto;
+      if (erro) li.className = 'erro';
+      $('avisos').appendChild(li);
+    }
+
+    function baseValida(v) {
+      try { var u = new URL(v); return u.protocol === 'https:' || u.protocol === 'http:'; } catch (e) { return false; }
+    }
+
+    function gerar() {
+      $('avisos').innerHTML = '';
+      $('msg').textContent = '';
+      linhas = [];
+
+      var base = $('base').value.trim();
+      if (!baseValida(base)) { aviso('Indique o endereço da página, começado por https:// (ex.: https://protocolo.teoriacuriosa.pt/).', true); return render(); }
+      try { localStorage.setItem('ccr_utm_base', base); } catch (e) {}
+
+      var empresas = $('empresas').value.split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean);
+      if (!empresas.length) { aviso('Escreva pelo menos uma empresa.', true); return render(); }
+
+      var canais = Array.prototype.map.call(document.querySelectorAll('#canais input:checked'), function (i) { return i.value; });
+      if (!canais.length) { aviso('Escolha pelo menos um canal.', true); return render(); }
+
+      var campanha = limpar($('campanha').value);
+      if (!campanha) { aviso('Indique o nome da campanha.', true); return render(); }
+      var conteudo = limpar($('conteudo').value).slice(0, 30);
+
+      var vistos = {};
+      empresas.forEach(function (nome) {
+        var completo = limpar(nome);
+        if (!completo) { aviso('"' + nome + '" não tem letras nem números válidos e foi ignorada.', true); return; }
+        var slug = completo.slice(0, 30);
+        if (completo.length > 30) aviso('"' + nome + '" foi cortada para 30 caracteres: ' + slug, false);
+        if (vistos[slug]) { aviso('"' + nome + '" dá o mesmo valor que "' + vistos[slug] + '" (' + slug + '). Use nomes diferentes.', true); return; }
+        vistos[slug] = nome;
+
+        canais.forEach(function (canal) {
+          var u = new URL(base);
+          u.searchParams.set('utm_source', slug);
+          u.searchParams.set('utm_medium', canal);
+          u.searchParams.set('utm_campaign', campanha.slice(0, 30));
+          if (conteudo) u.searchParams.set('utm_content', conteudo);
+          linhas.push({ empresa: nome, slug: slug, canal: canal, url: u.toString() });
+        });
+      });
+      render();
+    }
+
+    function render() {
+      var tb = document.querySelector('#tabela tbody');
+      tb.innerHTML = '';
+      $('tabela').hidden = !linhas.length;
+      $('copiar-tudo').disabled = $('csv').disabled = !linhas.length;
+      linhas.forEach(function (l) {
+        var tr = document.createElement('tr');
+        function td(t) { var c = document.createElement('td'); c.textContent = t; return c; }
+        tr.appendChild(td(l.empresa));
+        tr.appendChild(td(l.canal));
+        tr.appendChild(td(l.slug));
+        var tdl = document.createElement('td'); tdl.className = 'link';
+        var inp = document.createElement('input'); inp.type = 'text'; inp.readOnly = true; inp.value = l.url;
+        inp.setAttribute('aria-label', 'Link de ' + l.empresa + ' por ' + l.canal);
+        inp.addEventListener('focus', function () { inp.select(); });
+        tdl.appendChild(inp); tr.appendChild(tdl);
+        var tdb = document.createElement('td');
+        var b = document.createElement('button'); b.type = 'button'; b.textContent = 'Copiar';
+        b.addEventListener('click', function () { copiar(l.url, 'Link copiado.'); });
+        tdb.appendChild(b); tr.appendChild(tdb);
+        tb.appendChild(tr);
+      });
+      if (linhas.length) $('msg').textContent = linhas.length + (linhas.length === 1 ? ' link gerado.' : ' links gerados.');
+    }
+
+    function copiar(texto, confirmacao) {
+      function ok() { $('msg').textContent = confirmacao; }
+      function falhou() { $('msg').textContent = 'Não foi possível copiar. Selecione o texto e copie com Ctrl+C.'; }
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(texto).then(ok, falhou);
+      } else {
+        var ta = document.createElement('textarea'); ta.value = texto; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy') ? ok() : falhou(); } catch (e) { falhou(); }
+        document.body.removeChild(ta);
+      }
+    }
+
+    function tabulado() {
+      return ['Empresa\tCanal\tOrigem no Sheet\tLink'].concat(linhas.map(function (l) {
+        return [l.empresa, l.canal, l.slug, l.url].join('\t');
+      })).join('\n');
+    }
+
+    function csv() {
+      function c(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }
+      var corpo = [['Empresa', 'Canal', 'Origem no Sheet', 'Link'].map(c).join(';')].concat(linhas.map(function (l) {
+        return [l.empresa, l.canal, l.slug, l.url].map(c).join(';');
+      })).join('\r\n');
+      var blob = new Blob(['﻿' + corpo], { type: 'text/csv;charset=utf-8' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'links-por-empresa.csv';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+    }
+
+    $('gerar').addEventListener('click', gerar);
+    $('copiar-tudo').addEventListener('click', function () { copiar(tabulado(), 'Copiado. Cole no Excel ou no Google Sheets.'); });
+    $('csv').addEventListener('click', csv);
+  </script>
+</body>
+</html>

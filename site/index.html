@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Parceria Teoriacuriosa | Grupo CCR</title>
+  <meta name="description" content="Uma parceria pensada para si e para o seu futuro. Serviços e benefícios exclusivos para os colaboradores do Grupo CCR.">
+  <meta property="og:title" content="Parceria Teoriacuriosa | Grupo CCR">
+  <meta property="og:description" content="Uma parceria pensada para si e para o seu futuro. Serviços e benefícios exclusivos para os colaboradores do Grupo CCR.">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="preload" href="assets/fonts/montserrat-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page">
+
+    <img class="logo" src="assets/logo-vertical-claro.png" width="420" height="191" alt="Grupo Teoriacuriosa">
+
+    <section class="intro">
+      <h1>Uma parceria pensada para si e para o seu futuro.</h1>
+      <p>Na Teoriacuriosa, acreditamos numa relação diferente com as pessoas e com as suas decisões financeiras. Uma relação assente na transparência, na proximidade e na procura das soluções mais adequadas a cada realidade.</p>
+      <p>É com este propósito que estabelecemos uma parceria com o Grupo CCR, colocando à disposição dos seus colaboradores um conjunto de serviços e benefícios exclusivos.</p>
+      <p class="intro__fecho">Acreditamos que informar, acompanhar e encontrar as melhores soluções faz toda a diferença.</p>
+    </section>
+
+    <section class="caixa" aria-labelledby="titulo-form">
+      <div id="form-wrap">
+        <h2 id="titulo-form">Fale connosco!</h2>
+        <p class="caixa__nota">Todos os campos são obrigatórios, exceto a última caixa de seleção.</p>
+
+        <form id="ccr-form" novalidate>
+          <div class="campo">
+            <label for="nome">Nome</label>
+            <input id="nome" name="nome" type="text" autocomplete="name" maxlength="120" required aria-describedby="erro-nome">
+            <p class="erro" id="erro-nome" data-for="nome"></p>
+          </div>
+
+          <div class="linha">
+            <div class="campo">
+              <label for="contacto">Contacto (telefone)</label>
+              <input id="contacto" name="contacto" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="+351 912 345 678" required aria-describedby="erro-contacto">
+              <p class="erro" id="erro-contacto" data-for="contacto"></p>
+            </div>
+            <div class="campo">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" inputmode="email" autocomplete="email" maxlength="254" required aria-describedby="erro-email">
+              <p class="erro" id="erro-email" data-for="email"></p>
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="area">Área de negócio sobre a qual pretende mais informações</label>
+            <select id="area" name="area" required aria-describedby="erro-area">
+              <option value="" selected disabled>Escolha a opção</option>
+              <option>Mediação de seguros</option>
+              <option>Intermediação de créditos</option>
+              <option>Mediação imobiliária</option>
+              <option>Investimentos</option>
+              <option>Agência de viagens</option>
+            </select>
+            <p class="erro" id="erro-area" data-for="area"></p>
+          </div>
+
+          <!-- Honeypot: invisível para pessoas; os robôs preenchem-no -->
+          <div class="hp" aria-hidden="true">
+            <label for="website">Não preencher</label>
+            <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+          </div>
+
+          <fieldset class="consentimentos">
+            <legend>Consentimento de RGPD</legend>
+
+            <div class="campo">
+              <label class="check" for="privacidade">
+                <input id="privacidade" name="privacidade" type="checkbox" aria-describedby="erro-privacidade">
+                <span>Li e aceito a <a href="privacidade.html">Política de Privacidade</a> e autorizo o tratamento dos meus dados pessoais para responder a este pedido de informação.</span>
+              </label>
+              <p class="erro" id="erro-privacidade" data-for="privacidade"></p>
+            </div>
+
+            <div class="campo">
+              <label class="check" for="marketing">
+                <input id="marketing" name="marketing" type="checkbox">
+                <span>Aceito receber comunicações sobre novas campanhas, serviços e novidades da Teoriacuriosa, por email e por contacto telefónico (opcional). Posso retirar este consentimento a qualquer momento.</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <button class="btn" id="submit-btn" type="submit"><span class="btn__label">Enviar pedido</span></button>
+          <p class="estado" id="form-status" role="alert"></p>
+        </form>
+      </div>
+
+      <div id="success" class="sucesso" hidden tabindex="-1">
+        <h2>Pedido enviado</h2>
+        <p>Enviámos uma confirmação para <strong id="success-email"></strong>. A nossa equipa entra em contacto consigo muito em breve.</p>
+      </div>
+    </section>
+
+    <footer class="rodape">
+      <span>&copy; Teoriacuriosa</span>
+      <a href="privacidade.html">Política de Privacidade</a>
+    </footer>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
