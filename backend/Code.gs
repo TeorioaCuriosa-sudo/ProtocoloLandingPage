@@ -8,7 +8,7 @@
  *      versão e texto aceite, IP, user agent, hash de integridade)
  *      e guarda-o no Google Drive.
  *   2. Acrescenta uma linha no Google Sheet (com coluna Sim/Não para
- *      novas campanhas, link para o PDF e a origem do contacto: empresa, canal e campanha).
+ *      novas campanhas, link para o PDF e a origem do contacto: grupo, empresa e canal).
  *   3. Atualiza uma cópia .xlsx (Excel) do Sheet na mesma pasta do Drive.
  *   4. Envia o email automático de agradecimento.
  *
@@ -19,13 +19,20 @@
  */
 
 // Mude este texto sempre que alterar o código: abra o endereço /exec no browser e veja se mostra a versão nova.
-const VERSAO_CODIGO = '2026-11-16-ccr-v1';
+const VERSAO_CODIGO = '2026-11-16-ccr-v4';
 
 // ---------------- CONFIGURAÇÃO ----------------
 // Para replicar esta página para outro cliente, é aqui (e nos textos do index.html) que se muda.
 const CONFIG = {
   CAMPANHA: 'Parceria Teoriacuriosa | Grupo CCR',
+  // Nome do parceiro/grupo tal como aparece na frase do email: "...através da parceria entre a Teoriacuriosa e o <PARCERIA>."
+  PARCERIA: 'Grupo CCR',
   MARCA: 'Teoriacuriosa',
+
+  // Nomes das colunas do Sheet que mostram de onde veio cada contacto (vêm dos links do gerador de UTM).
+  // Parceria com empresas: Grupo / Empresa / Canal.  Campanha em redes: Campanha / Plataforma / Formato.
+  // Têm de ser mudados ANTES de correr o setup (ou, num Sheet que já existe, seguidos de atualizarCabecalhos).
+  COLUNAS: { GRUPO: 'Grupo', EMPRESA: 'Empresa', CANAL: 'Canal' },
   PREFIXO_ID: 'CCR',
 
   // Áreas de negócio aceites (têm de ser iguais às opções do index.html)
@@ -52,15 +59,17 @@ const CONFIG = {
   EMAIL_NO_REPLY: false,                     // true só funciona em contas Google Workspace
   EMAIL_ASSUNTO: 'Recebemos o seu pedido de informação',
 
-  // Endereço público da página (sem barra no fim), usado para mostrar o logo no email.
-  // Ex.: 'https://protocolo.teoriacuriosa.pt'. Se ficar vazio, o email mostra o nome da marca em texto.
+  // Endereço público da página (sem barra no fim). PREENCHER depois de publicar o site.
+  // Ex.: 'https://protocolo.teoriacuriosa.pt'. Serve para o logo do email e para o link "Cancelar subscrição"
+  // (que passa a apontar para o domínio da empresa, em vez de script.google.com: menos risco de spam).
+  // Se ficar vazio, o email mostra o nome da marca em texto e o link de cancelar usa o Apps Script.
   URL_SITE: '',
-  // Endereço da Web App (o mesmo APPS_SCRIPT_URL do script.js, termina em /exec).
-  // Usado no link "Cancelar subscrição". Vazio = o script usa o endereço da sua própria implementação.
+  // Só usado quando URL_SITE está vazio. Endereço da Web App (o mesmo APPS_SCRIPT_URL do config.js, termina em /exec).
+  // Vazio = o script usa o endereço da sua própria implementação.
   URL_WEBAPP: '',
 
   // Identificação do responsável pelo tratamento (aparece no PDF e no rodapé do email)
-  RESPONSAVEL_TRATAMENTO: 'TeoriaCuriosa Unipessoal Lda, NIPC 515226939, Rua do Rio Novo 345 O, 4495-145, Amorim, Póvoa de Varzim',
+  RESPONSAVEL_TRATAMENTO: 'TeoriaCuriosa Unipessoal Lda, NIPC 515226939, Rua do Rio Novo 395 O, 4495-145, Amorim, Póvoa de Varzim',
   CONTACTO_PRIVACIDADE: 'geral@teoriacuriosa.pt',
 
   // Versão em vigor do texto dos consentimentos (tem de bater com script.js)
@@ -90,11 +99,13 @@ const CONSENT_TEXTS = {
 // Colunas do Sheet. A ordem só conta na criação (setup). Depois, o script encontra
 // cada coluna pelo NOME do cabeçalho, por isso mover colunas no Sheet não o estraga.
 const HEADERS = [
-  'ID', 'Data/Hora', 'Nome completo', 'Email', 'Contacto', 'Área de negócio',
+  'ID', 'Data/Hora',
+  CONFIG.COLUNAS.GRUPO, CONFIG.COLUNAS.EMPRESA,                    // de onde veio (links UTM)
+  'Nome completo', 'Email', 'Contacto', 'Área de negócio',         // campos do formulário
+  CONFIG.COLUNAS.CANAL, 'Conteúdo',                               // por onde veio (links UTM)
   'Aceita Política de Privacidade', 'Aceita novas campanhas', 'Versão do consentimento',
   'IP', 'User Agent', 'Comprovativo PDF', 'Hash SHA-256', 'Email enviado',
   'Cancelou novas campanhas em',
-  'Origem (empresa)', 'Meio', 'Campanha', 'Conteúdo',
 ];
 
 const PHONE_RE = /^\+?[0-9\s().-]{9,20}$/;
@@ -116,6 +127,40 @@ function setup() {
 }
 
 function setupForcar() { setupCriar_(); }
+
+// Para um Sheet que já foi criado com a versão anterior do script: renomeia as colunas de origem
+// (Origem (empresa), Meio e Campanha passam aos nomes de CONFIG.COLUNAS), acrescenta as que faltem e põe as
+// colunas pela ordem nova. Não apaga nem altera dados. Pode correr-se mais do que uma vez.
+// Num Sheet criado agora pelo setup() não é preciso.
+function atualizarCabecalhos() {
+  const sh = abrirSheet_();
+  const lerCab = () => sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+  const antigos = { 'Origem (empresa)': CONFIG.COLUNAS.EMPRESA, 'Meio': CONFIG.COLUNAS.CANAL, 'Campanha': CONFIG.COLUNAS.GRUPO };
+
+  // 1. nomes novos
+  let cab = lerCab();
+  cab.forEach((h, i) => {
+    const novo = antigos[h];
+    if (novo && cab.indexOf(novo) < 0) sh.getRange(1, i + 1).setValue(novo);
+  });
+
+  // 2. colunas que faltem ficam no fim (serão postas no sítio no passo seguinte)
+  cab = lerCab();
+  HEADERS.forEach(h => {
+    if (cab.indexOf(h) < 0) {
+      sh.getRange(1, sh.getLastColumn() + 1).setValue(h)
+        .setFontWeight('bold').setBackground(COR.OURO).setFontColor(COR.GRAFITE);
+      cab = lerCab();
+    }
+  });
+
+  // 3. ordem nova (só se movem colunas da direita para a esquerda; colunas que alguém acrescentou ficam no fim)
+  for (let i = 0; i < HEADERS.length; i++) {
+    const atual = lerCab().indexOf(HEADERS[i]) + 1;
+    if (atual > i + 1) sh.moveColumns(sh.getRange(1, atual, 1, 1), i + 1);
+  }
+  Logger.log('Cabeçalhos atualizados: ' + lerCab().join(' | '));
+}
 
 function setupCriar_() {
   const props = PropertiesService.getScriptProperties();
@@ -161,6 +206,13 @@ function setupCriar_() {
 function doPost(e) {
   try {
     const d = JSON.parse(e.postData.contents);
+
+    // Cancelar subscrição, vindo da página cancelar.html do site (o link do email aponta para o domínio da página)
+    if (d.acao === 'cancelar') {
+      cancelarSubscricao(d.id, d.t);   // lança erro se o link não for válido
+      return json_({ ok: true, cancelado: true });
+    }
+
     validar_(d);
 
     const lock = LockService.getScriptLock();
@@ -245,7 +297,7 @@ function processar_(d) {
   const hash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, base, Utilities.Charset.UTF_8)
     .map(b => ('0' + (b & 0xff).toString(16)).slice(-2)).join('');
 
-  const origem = lerOrigem_(d);   // empresa / canal / campanha / conteúdo (UTM)
+  const origem = lerOrigem_(d);   // grupo / empresa / canal / conteúdo (UTM)
 
   const nome = String(d.nome).trim();
   const registo = {
@@ -281,10 +333,10 @@ function processar_(d) {
     'Comprovativo PDF': registo.pdfUrl,
     'Hash SHA-256': hash,
     'Email enviado': 'A enviar…',
-    'Origem (empresa)': origem.fonte,
-    'Meio': origem.meio,
-    'Campanha': origem.campanha,
-    'Conteúdo': origem.conteudo,
+    [CONFIG.COLUNAS.GRUPO]: origem.campanha,     // utm_campaign
+    [CONFIG.COLUNAS.EMPRESA]: origem.fonte,      // utm_source
+    [CONFIG.COLUNAS.CANAL]: origem.meio,         // utm_medium
+    'Conteúdo': origem.conteudo,                 // utm_content
   };
   const cab = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
   sh.appendRow(cab.map(h => seguro_(valores[h])));
@@ -294,7 +346,7 @@ function processar_(d) {
 }
 
 // Origem do contacto. O site envia quatro campos (origemFonte, origemMeio, origemCampanha, origemConteudo),
-// que vêm dos parâmetros UTM do link: utm_source = empresa, utm_medium = canal, utm_campaign, utm_content.
+// que vêm dos parâmetros UTM do link: utm_source = empresa, utm_medium = canal, utm_campaign = grupo, utm_content.
 // Cada valor é limpo para letras minúsculas, números, ponto, hífen e sublinhado (máx. 30), por isso
 // um pedido forjado não consegue meter lixo ou fórmulas nas colunas.
 function limparOrigem_(v) {
@@ -462,8 +514,8 @@ function enviarEmail_(r, assunto) {
       : `<p style="font-size:20px;font-weight:bold;color:${COR.GRAFITE};margin:0 0 28px">${esc(CONFIG.MARCA)}</p>`;
 
     const linhaArea = area
-      ? `Recebemos o seu pedido de informação sobre <strong>${esc(area)}</strong>, feito através da parceria entre a Teoriacuriosa e o Grupo CCR.`
-      : 'Recebemos o seu pedido de informação, feito através da parceria entre a Teoriacuriosa e o Grupo CCR.';
+      ? `Recebemos o seu pedido de informação sobre <strong>${esc(area)}</strong>, feito através da parceria entre a Teoriacuriosa e o ${esc(CONFIG.PARCERIA)}.`
+      : `Recebemos o seu pedido de informação, feito através da parceria entre a Teoriacuriosa e o ${esc(CONFIG.PARCERIA)}.`;
 
     // Documento HTML completo (doctype, head, body): os filtros de spam desconfiam de fragmentos soltos
     const html = `<!doctype html>
@@ -495,8 +547,8 @@ function enviarEmail_(r, assunto) {
     const texto =
       `Obrigado pelo seu contacto, ${primeiroNome}!\n\n` +
       (area
-        ? `Recebemos o seu pedido de informação sobre ${area}, feito através da parceria entre a Teoriacuriosa e o Grupo CCR.\n\n`
-        : `Recebemos o seu pedido de informação, feito através da parceria entre a Teoriacuriosa e o Grupo CCR.\n\n`) +
+        ? `Recebemos o seu pedido de informação sobre ${area}, feito através da parceria entre a Teoriacuriosa e o ${CONFIG.PARCERIA}.\n\n`
+        : `Recebemos o seu pedido de informação, feito através da parceria entre a Teoriacuriosa e o ${CONFIG.PARCERIA}.\n\n`) +
       `A nossa equipa vai analisar o seu pedido e entrar em contacto consigo muito em breve, ` +
       `por telefone ou email, para apresentar as soluções mais adequadas à sua realidade.\n\n` +
       `Se precisar de falar connosco entretanto, escreva para ${CONFIG.CONTACTO_PRIVACIDADE}.\n\n` +
@@ -555,9 +607,14 @@ function idValido_(id) {
   return new RegExp('^' + CONFIG.PREFIXO_ID + '-[0-9A-Z-]{10,40}$').test(String(id || ''));
 }
 
+// Com URL_SITE preenchido, o link do email aponta para a página cancelar.html do site (domínio da empresa).
+// Os filtros de spam (Outlook/Hotmail em particular) desconfiam de links para script.google.com.
+// Sem URL_SITE, usa a página do próprio Apps Script (funciona, mas é mais provável cair no spam).
 function linkCancelar_(id) {
+  const t = tokenCancelar_(id);
+  if (CONFIG.URL_SITE) return CONFIG.URL_SITE + '/cancelar.html?id=' + encodeURIComponent(id) + '&t=' + t;
   const base = CONFIG.URL_WEBAPP || ScriptApp.getService().getUrl();
-  return base + '?acao=cancelar&id=' + encodeURIComponent(id) + '&t=' + tokenCancelar_(id);
+  return base + '?acao=cancelar&id=' + encodeURIComponent(id) + '&t=' + t;
 }
 
 function paginaCancelar_(id, t) {
@@ -652,7 +709,7 @@ function testarSubmissao() {
     area: CONFIG.AREAS[0],
     privacidade: true, marketing: true, consentVersion: CONFIG.CONSENT_VERSION,
     ip: '0.0.0.0', pagina: 'editor', userAgent: 'Teste manual',
-    origemFonte: 'teste', origemMeio: 'manual', origemCampanha: 'editor', origemConteudo: '',
+    origemFonte: 'empresa-teste', origemMeio: 'manual', origemCampanha: 'grupo-teste', origemConteudo: '',
   }) } });
   Logger.log(res.getContent());
 }
@@ -666,6 +723,26 @@ function testarEmailCompleto() {
               area: CONFIG.AREAS[0], email: DESTINO, marketing: COM_MARKETING };
   Logger.log('Quota restante hoje: ' + MailApp.getRemainingDailyQuota());
   Logger.log('Resultado: ' + JSON.stringify(enviarEmail_(r)));
+}
+
+// Teste de entrega: envia o email COMPLETO (igual ao do site) para cada endereço de DESTINOS, para ver em que pasta
+// chega (caixa de entrada, spam/lixo). Use endereços reais de vários fornecedores (Gmail, Hotmail, Outlook, ...).
+// Depois, no Gmail, "Mostrar original" no email recebido deve indicar SPF: PASS, DKIM: PASS e DMARC: PASS.
+// Não precisa de nova implementação: corre direto no editor.
+function testarEntrega() {
+  const DESTINOS = [
+    // 'exemplo@hotmail.com',
+    // 'exemplo@outlook.com',
+    // 'exemplo@gmail.com',
+  ];
+  if (!DESTINOS.length) { Logger.log('Preencha a lista DESTINOS com os emails de teste e volte a correr.'); return; }
+  Logger.log('Conta que envia: ' + Session.getEffectiveUser().getEmail() + ' | EMAIL_FROM: ' + (CONFIG.EMAIL_FROM || '(vazio)'));
+  DESTINOS.forEach((destino, i) => {
+    const r = { id: CONFIG.PREFIXO_ID + '-TESTE-0000-000' + i, nome: 'Teste Silva', primeiroNome: 'Teste',
+                area: CONFIG.AREAS[0], email: destino, marketing: true };
+    Logger.log(destino + ' → ' + JSON.stringify(enviarEmail_(r, '[Teste ' + (i + 1) + '] ' + CONFIG.EMAIL_ASSUNTO)));
+  });
+  Logger.log('Quota restante hoje: ' + MailApp.getRemainingDailyQuota() + '. Espere 1 a 2 minutos e veja a caixa de entrada e o spam de cada destino.');
 }
 
 // Mostra: o que ficou escrito em "Email enviado" nas últimas 5 respostas, a quota de emails que sobra hoje,
@@ -698,7 +775,7 @@ function diagnosticoEmail() {
 // Mostra, sem criar nada, como a origem (UTM) é limpa. Corra no editor e veja o registo de execução.
 function testarLerOrigem() {
   [
-    { origemFonte: 'empresa-x', origemMeio: 'email', origemCampanha: 'protocolo-ccr', origemConteudo: '' },
+    { origemFonte: 'empresa-x', origemMeio: 'email', origemCampanha: 'grupo-ccr', origemConteudo: '' },
     { origemFonte: 'direto' },
     { origemFonte: '=HYPERLINK("x")', origemMeio: 'E-mail Interno', origemCampanha: 'Protocolo CCR!' },
   ].forEach(d => Logger.log(JSON.stringify(lerOrigem_(d))));

@@ -1,14 +1,11 @@
 /* =========================================================
    Parceria Teoriacuriosa | Grupo CCR
-   Envio do formulário para o Google Apps Script (backend/Code.gs)
+   Envio do formulário para o Google Apps Script (backend/Code.gs). Configuração em config.js
    ========================================================= */
 
-// 1) URL da Web App do Apps Script (termina em /exec). Cole aqui depois de publicar o Code.gs.
-const APPS_SCRIPT_URL = 'COLE_AQUI_O_URL_DA_WEB_APP';
-
-// 2) Versão do texto dos consentimentos. Se alterar o texto das caixas no index.html,
-//    suba a versão AQUI e crie a nova versão no Code.gs (CONSENT_TEXTS), para o comprovativo refletir o texto certo.
-const CONSENT_VERSION = 'CCR2026-v1';
+// URL do Apps Script e versão dos consentimentos: ver config.js
+const APPS_SCRIPT_URL = window.CCR_CONFIG.APPS_SCRIPT_URL;
+const CONSENT_VERSION = window.CCR_CONFIG.CONSENT_VERSION;
 
 const form      = document.getElementById('ccr-form');
 const btn       = document.getElementById('submit-btn');
@@ -45,7 +42,7 @@ async function getPublicIP() {
 // ---------------------------------------------------------
 // Origem do contacto (UTM / referrer)
 // Cada empresa recebe o seu link (ver ferramentas/gerador-utm.html):
-//   ?utm_source=<empresa>&utm_medium=<canal>&utm_campaign=protocolo-ccr&utm_content=<opcional>
+//   ?utm_source=<empresa>&utm_medium=<canal>&utm_campaign=<identificador-do-grupo>&utm_content=<opcional>
 // O servidor grava os quatro valores em colunas próprias do Sheet.
 // ---------------------------------------------------------
 const ORIGEM_KEY = 'ccr_origem';
@@ -194,7 +191,7 @@ form.addEventListener('submit', async (e) => {
 
   // Aviso claro se o endereço do Apps Script ainda não foi configurado
   if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(APPS_SCRIPT_URL)) {
-    mostrarErro('Configuração em falta: o endereço do Apps Script (APPS_SCRIPT_URL) não está correto no script.js.');
+    mostrarErro('Configuração em falta: o endereço do Apps Script (APPS_SCRIPT_URL) não está correto no config.js.');
     console.error('APPS_SCRIPT_URL inválido:', APPS_SCRIPT_URL);
     return;
   }

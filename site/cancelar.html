@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Cancelar subscrição | Teoriacuriosa</title>
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="preload" href="assets/fonts/montserrat-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page">
+    <img class="logo" src="assets/logo-vertical-claro.png" width="420" height="191" alt="Grupo Teoriacuriosa">
+
+    <section class="caixa" aria-labelledby="titulo">
+      <div id="pedido" hidden>
+        <h2 id="titulo">Cancelar subscrição</h2>
+        <p id="msg">Deixará de receber comunicações da Teoriacuriosa sobre novas campanhas, serviços e novidades.</p>
+        <button class="btn" id="confirmar" type="button"><span class="btn__label">Confirmar cancelamento</span></button>
+        <p class="estado" id="estado" role="alert"></p>
+      </div>
+
+      <div id="feito" class="sucesso" hidden tabindex="-1">
+        <h2>Subscrição cancelada</h2>
+        <p>Não voltará a receber estas comunicações. Pode continuar a contactar-nos em <a href="mailto:geral@teoriacuriosa.pt">geral@teoriacuriosa.pt</a>.</p>
+      </div>
+
+      <div id="invalido" hidden>
+        <h2>Ligação inválida</h2>
+        <p>Esta ligação não é válida ou expirou. Para cancelar a subscrição, escreva para <a href="mailto:geral@teoriacuriosa.pt">geral@teoriacuriosa.pt</a>.</p>
+      </div>
+    </section>
+
+    <footer class="rodape">
+      <span>&copy; Teoriacuriosa</span>
+      <a href="privacidade.html">Política de Privacidade</a>
+    </footer>
+  </main>
+
+  <script src="config.js"></script>
+  <script>
+    (function () {
+      var q = new URLSearchParams(location.search);
+      var id = q.get('id') || '';
+      var t = q.get('t') || '';
+      var $ = function (x) { return document.getElementById(x); };
+      var btn = $('confirmar');
+
+      // O link do email traz o identificador e uma assinatura; sem eles não há nada a confirmar.
+      if (!/^[A-Z]{2,10}-[0-9A-Z-]{10,40}$/.test(id) || !/^[0-9a-f]{32}$/.test(t)) {
+        $('invalido').hidden = false;
+        return;
+      }
+      $('pedido').hidden = false;
+
+      // Só cancela ao clicar (evita que antivírus ou leitores de email cancelem sozinhos ao abrir o link).
+      btn.addEventListener('click', async function () {
+        var estado = $('estado');
+        estado.textContent = ''; estado.classList.remove('is-error');
+        btn.disabled = true;
+        btn.querySelector('.btn__label').textContent = 'A processar…';
+        try {
+          var res = await fetch(window.CCR_CONFIG.APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ acao: 'cancelar', id: id, t: t }),
+          });
+          var data = JSON.parse(await res.text());
+          if (!data.ok) throw new Error(data.error || 'Erro desconhecido');
+          $('pedido').hidden = true;
+          $('feito').hidden = false;
+          $('feito').focus();
+        } catch (err) {
+          console.error(err);
+          estado.textContent = 'Não foi possível cancelar. Tente novamente ou escreva para geral@teoriacuriosa.pt.';
+          estado.classList.add('is-error');
+          btn.disabled = false;
+          btn.querySelector('.btn__label').textContent = 'Confirmar cancelamento';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
