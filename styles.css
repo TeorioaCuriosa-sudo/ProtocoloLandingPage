@@ -76,7 +76,7 @@ body {
   .logo { width: 160px; margin-bottom: 40px; }
   .intro h1 { max-width: 34ch; }
   .intro p { max-width: 84ch; }
-  .caixa { max-width: 680px; margin-left: auto; margin-right: auto; }
+  .caixa { max-width: 84ch; margin-left: auto; margin-right: auto; }   /* mesma largura do texto */
 }
 
 /* ---------- Caixa do formulário ---------- */
