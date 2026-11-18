@@ -70,6 +70,15 @@ body {
 
 .intro .intro__fecho { font-weight: 600; margin-bottom: 0; }
 
+/* Computador: logo mais pequeno e texto mais largo. O telemóvel e o tablet ficam como estavam. */
+@media (min-width: 900px) {
+  .page { max-width: 1040px; }
+  .logo { width: 160px; margin-bottom: 40px; }
+  .intro h1 { max-width: 34ch; }
+  .intro p { max-width: 84ch; }
+  .caixa { max-width: 680px; margin-left: auto; margin-right: auto; }
+}
+
 /* ---------- Caixa do formulário ---------- */
 .caixa {
   position: relative;
@@ -249,6 +258,25 @@ select:focus-visible,
 .sucesso h2 { margin-bottom: 10px; }
 .sucesso p { margin: 0; max-width: 46ch; }
 .sucesso[hidden], #form-wrap[hidden] { display: none; }
+
+/* ---------- Redes sociais (centradas, por cima do rodapé) ---------- */
+/* Os ícones já trazem a sombra no próprio ficheiro, por isso têm margem transparente à volta do botão. */
+.redes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 36px;
+}
+.redes a {
+  display: block;
+  margin: 0 -4px;
+  border-radius: 16px;
+  transition: transform 0.15s ease;
+}
+.redes a:hover { transform: translateY(-2px); }
+.redes img { display: block; width: 66px; height: auto; }
+.redes + .rodape { margin-top: 4px; }
+@media (max-width: 340px) { .redes img { width: 56px; } }
 
 /* ---------- Rodapé ---------- */
 .rodape {

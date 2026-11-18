@@ -19,7 +19,7 @@
  */
 
 // Mude este texto sempre que alterar o código: abra o endereço /exec no browser e veja se mostra a versão nova.
-const VERSAO_CODIGO = '2026-11-16-ccr-v4';
+const VERSAO_CODIGO = '2026-11-18-ccr-v5';
 
 // ---------------- CONFIGURAÇÃO ----------------
 // Para replicar esta página para outro cliente, é aqui (e nos textos do index.html) que se muda.
@@ -38,7 +38,7 @@ const CONFIG = {
   // Áreas de negócio aceites (têm de ser iguais às opções do index.html)
   AREAS: [
     'Mediação de seguros',
-    'Intermediação de créditos',
+    'Intermediação de crédito',
     'Mediação imobiliária',
     'Investimentos',
     'Agência de viagens',
@@ -91,8 +91,8 @@ const CONSENT_TEXTS = {
       'Li e aceito a Política de Privacidade e autorizo o tratamento dos meus dados pessoais ' +
       'para responder a este pedido de informação.',
     marketing:
-      'Aceito receber comunicações sobre novas campanhas, serviços e novidades da Teoriacuriosa, ' +
-      'por email e por contacto telefónico (opcional). Posso retirar este consentimento a qualquer momento.',
+      'Aceito receber comunicações sobre novas campanhas, serviços e novidades da TeoriaCuriosa. ' +
+      'Posso retirar este consentimento a qualquer momento.',
   },
 };
 
@@ -503,8 +503,8 @@ function enviarEmail_(r, assunto) {
 
     const blocoMarketing = r.marketing ? `
       <p style="margin:0 0 20px;padding:14px 16px;background:${COR.FUNDO_SUAVE};border-left:4px solid ${COR.OURO};color:${COR.GRAFITE};font-size:14px;line-height:1.6">
-        Confirmamos que aceitou receber comunicações da Teoriacuriosa sobre <strong>novas campanhas, serviços e novidades</strong>,
-        por email e por contacto telefónico. Pode retirar este consentimento a qualquer momento:
+        Confirmamos que aceitou receber comunicações da Teoriacuriosa sobre <strong>novas campanhas, serviços e novidades</strong>.
+        Pode retirar este consentimento a qualquer momento:
         <a href="${esc(linkCancelar_(r.id))}" style="color:${COR.OURO_ESCURO};font-weight:bold">Cancelar subscrição</a>,
         ou escreva para <a href="mailto:${esc(CONFIG.CONTACTO_PRIVACIDADE)}" style="color:${COR.OURO_ESCURO}">${esc(CONFIG.CONTACTO_PRIVACIDADE)}</a>.
       </p>` : '';
@@ -553,8 +553,8 @@ function enviarEmail_(r, assunto) {
       `por telefone ou email, para apresentar as soluções mais adequadas à sua realidade.\n\n` +
       `Se precisar de falar connosco entretanto, escreva para ${CONFIG.CONTACTO_PRIVACIDADE}.\n\n` +
       (r.marketing
-        ? `Confirmamos que aceitou receber comunicações da Teoriacuriosa sobre novas campanhas, serviços e novidades, ` +
-          `por email e por contacto telefónico. Para cancelar a subscrição: ${linkCancelar_(r.id)}\n` +
+        ? `Confirmamos que aceitou receber comunicações da Teoriacuriosa sobre novas campanhas, serviços e novidades. ` +
+          `Para cancelar a subscrição: ${linkCancelar_(r.id)}\n` +
           `Ou escreva para ${CONFIG.CONTACTO_PRIVACIDADE}.\n\n`
         : '') +
       `Com os melhores cumprimentos,\nEquipa Teoriacuriosa`;
