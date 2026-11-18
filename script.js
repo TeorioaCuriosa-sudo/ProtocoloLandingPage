@@ -190,7 +190,7 @@ form.addEventListener('submit', async (e) => {
   if (!validate()) return;
 
   // Aviso claro se o endereço do Apps Script ainda não foi configurado
-  if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(APPS_SCRIPT_URL)) {
+  if (!/^https:\/\/script\.google\.com\/(?:a\/macros\/[^/]+|macros)\/s\/[^/]+\/exec$/.test(APPS_SCRIPT_URL)) {
     mostrarErro('Configuração em falta: o endereço do Apps Script (APPS_SCRIPT_URL) não está correto no config.js.');
     console.error('APPS_SCRIPT_URL inválido:', APPS_SCRIPT_URL);
     return;
