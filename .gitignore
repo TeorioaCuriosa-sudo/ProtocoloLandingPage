@@ -1,0 +1,9 @@
+# Só a página vai para o GitHub Pages. Tudo o que está aqui é interno e NÃO deve ficar público.
+backend/
+ferramentas/
+Claude outputs/
+Info.txt
+LEIA-ME.md
+styles-1.css
+# originais dos ícones das redes (a página usa os assets/rede-*.png)
+assets/Group*.png
